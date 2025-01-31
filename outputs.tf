@@ -79,5 +79,5 @@ output "cognito_user_pool_id" {
 
 output "cognito_domain" {
   description = "Cognito Domain"
-  value       = try(aws_cognito_user_pool_domain.main[0].domain, null)
+  value       = length(aws_cognito_user_pool_domain.main) > 0 ? "${aws_cognito_user_pool_domain.main[0].domain}.auth.${local.aws_region}.amazoncognito.com" : null
 }
