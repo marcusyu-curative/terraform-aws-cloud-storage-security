@@ -9,7 +9,7 @@ terraform {
 
 resource "aws_iam_role" "remote_access" {
   count = local.create_cross_account_role ? 1 : 0
-  name = local.cross_account_role_name
+  name  = local.cross_account_role_name
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
     Statement = [
@@ -35,7 +35,7 @@ resource "aws_iam_policy" "remote_access" {
     Version = "2012-10-17"
     Statement = [
       {
-        Sid = "AllResources${var.application_id}"
+        Sid    = "AllResources${var.application_id}"
         Effect = "Allow"
         Action = [
           "cloudwatch:GetMetricStatistics",
@@ -57,7 +57,7 @@ resource "aws_iam_policy" "remote_access" {
         Resource = "*"
       },
       {
-        Sid = "ElasticFileSystemActions${var.application_id}"
+        Sid    = "ElasticFileSystemActions${var.application_id}"
         Effect = "Allow"
         Action = [
           "elasticfilesystem:ModifyMountTargetSecurityGroups",
@@ -70,7 +70,7 @@ resource "aws_iam_policy" "remote_access" {
         ]
       },
       {
-        Sid = "S3QuarentineActions${var.application_id}"
+        Sid    = "S3QuarentineActions${var.application_id}"
         Effect = "Allow"
         Action = [
           "s3:CreateBucket",
@@ -84,6 +84,7 @@ resource "aws_iam_policy" "remote_access" {
           "s3:GetObjectTagging",
           "s3:GetObjectAttributes",
           "s3:PutObjectTagging",
+          "s3:PutObjectVersionTagging",
           "s3:DeleteObject",
           "s3:DeleteObjectTagging",
           "s3:DeleteObjectVersion",
@@ -94,11 +95,12 @@ resource "aws_iam_policy" "remote_access" {
         Resource = "arn:${data.aws_partition.current.partition}:s3:::${var.quarantine_bucket_prefix}*"
       },
       {
-        Sid = "S3WriteActions${var.application_id}"
+        Sid    = "S3WriteActions${var.application_id}"
         Effect = "Allow"
         Action = [
           "s3:PutObject",
           "s3:PutObjectTagging",
+          "s3:PutObjectVersionTagging",
           "s3:PutBucketLogging",
           "s3:PutBucketNotification",
           "s3:PutBucketPolicy",
@@ -108,10 +110,10 @@ resource "aws_iam_policy" "remote_access" {
           "s3:DeleteObject",
           "s3:DeleteObjectVersion"
         ]
-        Resource = var.s3_allowed_bucket_prefixes == "*" ? [ "arn:${data.aws_partition.current.partition}:s3:::*" ] : split(",", var.s3_allowed_bucket_prefixes)
+        Resource = var.s3_allowed_bucket_prefixes == "*" ? ["arn:${data.aws_partition.current.partition}:s3:::*"] : split(",", var.s3_allowed_bucket_prefixes)
       },
       {
-        Sid = "S3ReadOnly${var.application_id}"
+        Sid    = "S3ReadOnly${var.application_id}"
         Effect = "Allow"
         Action = [
           "s3:GetBucketNotification",
@@ -134,7 +136,7 @@ resource "aws_iam_policy" "remote_access" {
         Resource = "arn:${data.aws_partition.current.partition}:s3:::*"
       },
       {
-        Sid = "SnsAllActions${var.application_id}"
+        Sid    = "SnsAllActions${var.application_id}"
         Effect = "Allow"
         Action = [
           "sns:ListSubscriptions",
@@ -144,7 +146,7 @@ resource "aws_iam_policy" "remote_access" {
         Resource = "arn:${data.aws_partition.current.partition}:sns:*:${data.aws_caller_identity.current.account_id}:*"
       },
       {
-        Sid = "SnsApplicationActions${var.application_id}"
+        Sid    = "SnsApplicationActions${var.application_id}"
         Effect = "Allow"
         Action = [
           "sns:ListSubscriptionsByTopic",
@@ -155,7 +157,7 @@ resource "aws_iam_policy" "remote_access" {
         Resource = "arn:${data.aws_partition.current.partition}:sns:*:${data.aws_caller_identity.current.account_id}:*${var.application_id}"
       },
       {
-        Sid = "RestrictedResources${var.application_id}"
+        Sid    = "RestrictedResources${var.application_id}"
         Effect = "Allow"
         Action = [
           "cloudformation:DeleteStack",
@@ -175,7 +177,7 @@ resource "aws_iam_policy" "remote_access" {
         ]
       },
       {
-        Sid = "KmsAccess${var.application_id}"
+        Sid    = "KmsAccess${var.application_id}"
         Effect = "Allow"
         Condition = {
           StringLike = {
@@ -188,7 +190,7 @@ resource "aws_iam_policy" "remote_access" {
           "kms:GenerateDataKey"
         ]
         Resource = var.allow_access_to_all_kms_keys ? "*" : "arn:${data.aws_partition.current.partition}:kms:::key/no-blanket-kms-access"
-      }      
+      }
     ]
   })
 }
@@ -199,7 +201,7 @@ resource "aws_iam_policy" "remote_access_ec2_management" {
     Version = "2012-10-17"
     Statement = [
       {
-        Sid = "EC2CreateSnapshot${var.application_id}"
+        Sid    = "EC2CreateSnapshot${var.application_id}"
         Effect = "Allow"
         Condition = {
           StringEquals = {
@@ -213,7 +215,7 @@ resource "aws_iam_policy" "remote_access_ec2_management" {
         Resource = "arn:${data.aws_partition.current.partition}:ec2:*::snapshot/*"
       },
       {
-        Sid = "VpcPeering${var.application_id}"
+        Sid    = "VpcPeering${var.application_id}"
         Effect = "Allow"
         Condition = {
           StringEquals = {
@@ -229,7 +231,7 @@ resource "aws_iam_policy" "remote_access_ec2_management" {
         ]
       },
       {
-        Sid = "EC2CreateSnapshotForAnyVolume${var.application_id}"
+        Sid    = "EC2CreateSnapshotForAnyVolume${var.application_id}"
         Effect = "Allow"
         Action = [
           "ec2:CreateSnapshot"
@@ -237,11 +239,11 @@ resource "aws_iam_policy" "remote_access_ec2_management" {
         Resource = "arn:${data.aws_partition.current.partition}:ec2:*:*:volume/*"
       },
       {
-        Sid = "EC2DeleteSnapshot${var.application_id}"
+        Sid    = "EC2DeleteSnapshot${var.application_id}"
         Effect = "Allow"
         Condition = {
           StringEquals = {
-            "aws:ResourceTag/CloudStorageSec-${var.application_id}": "Snapshot"
+            "aws:ResourceTag/CloudStorageSec-${var.application_id}" : "Snapshot"
           }
         }
         Action = [
@@ -266,7 +268,7 @@ resource "aws_iam_role_policy_attachment" "remote_access_ec2_management" {
 
 resource "aws_iam_role" "event_bridge_role" {
   count = local.create_event_bridge_role ? 1 : 0
-  name = local.cross_account_event_bridge_role_name
+  name  = local.cross_account_event_bridge_role_name
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
     Statement = [
@@ -287,7 +289,7 @@ resource "aws_iam_policy" "event_bridge" {
     Version = "2012-10-17"
     Statement = [
       {
-        Sid = "PutEvents${var.application_id}"
+        Sid    = "PutEvents${var.application_id}"
         Effect = "Allow"
         Action = [
           "events:PutEvents",
@@ -332,12 +334,12 @@ resource "aws_iam_role_policy_attachment" "event_bridge_remote_role" {
 
 resource "aws_iam_policy" "workdocs" {
   count = var.create_workdocs_permissions ? 1 : 0
-  name = "${var.service_name}WorkdocsPolicy-${var.application_id}"
+  name  = "${var.service_name}WorkdocsPolicy-${var.application_id}"
   policy = jsonencode({
     Version = "2012-10-17"
     Statement = [
       {
-        Sid = "WorkdocsActions${var.application_id}"
+        Sid    = "WorkdocsActions${var.application_id}"
         Effect = "Allow"
         Action = [
           "workdocs:*Document*",
